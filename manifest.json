@@ -1,0 +1,17 @@
+{
+  "name": "CYBER-SPY",
+  "short_name": "CYBER-SPY",
+  "description": "منصة CYBER-SPY لتحليل الملفات وإدارة طلبات التحليل.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "dir": "rtl",
+  "lang": "ar",
+  "theme_color": "#050505",
+  "background_color": "#050505",
+  "categories": [
+    "security",
+    "utilities"
+  ]
+}
