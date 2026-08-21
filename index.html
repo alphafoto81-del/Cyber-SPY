@@ -256,26 +256,106 @@ function mediaHTML(d,full){
  return d.type.startsWith('video')?`<video class="preview" ${full?'controls':''} src="${d.data}"></video><div class="small">${safe}</div>`:`<img class="preview media-click" onclick='openImage(${JSON.stringify(d.data)})' src="${d.data}" alt=""><div class="small">${safe}</div>`;
 }
 async function addSubmission(data){
- const id=Date.now().toString(36)+Math.random().toString(36).slice(2);
- const submission={id,analysisId:makeAnalysisId(),user:currentUser,items:[],status:'pending',note:'',createdAt:new Date().toISOString()};
- if(await waitForFirebase()){
-  try{
-   const A=window.firebaseAPI;
-   const storageRef=A.ref(A.storage,`submissions/${currentUser}/${id}/${encodeURIComponent(data.name)}`);
-   await A.uploadString(storageRef,data.data,'data_url',{contentType:data.type||'application/octet-stream'});
-   const url=await A.getDownloadURL(storageRef);
-   submission.items=[{name:data.name,type:data.type,size:data.size,data:url,storagePath:storageRef.fullPath}];
-   await A.setDoc(A.doc(A.db,'submissions',id),{analysisId:submission.analysisId,user:submission.user,items:submission.items,status:submission.status,note:submission.note,createdAt:submission.createdAt});
-  }catch(e){console.error(e);throw new Error('تعذر رفع الصورة إلى Firebase. تحقق من قواعد Storage وFirestore.');}
- }else{submission.items=[data];}
- db.submissions.push(submission); save();
- return submission;
-}
+async function addSubmission(data){
+  const id = Date.now().toString(36) + Math.random().toString(36).slice(2);
+
+  const submission = {
+    id,
+    analysisId: makeAnalysisId(),
+    user: currentUser,
+    items: [],
+    status: 'pending',
+    note: '',
+    createdAt: new Date().toISOString()
+  };
+
+  if (!data || !data.data) {
+    throw new Error('لم يتم اختيار صورة.');
+  }
+
+  const ready = await waitForFirebase();
+
+  if (!ready || !window.firebaseAPI) {
+    throw new Error('تعذر الاتصال بـ Firebase.');
+  }
+
+  try {
+    const A = window.firebaseAPI;
+
+    const storagePath =
+      `submissions/${encodeURIComponent(currentUser)}/${id}/${encodeURIComponent(data.name)}`;
+
+    const storageRef = A.ref(A.storage, storagePath);
+
+    await A.uploadString(
+      storageRef,
+      data.data,
+      'data_url',
+      {
+        contentType: data.type || 'image/jpeg'
+      }
+    );
+
+    const url = await A.getDownloadURL(storageRef);
+
+    submission.items = [{
+      name: data.name,
+      type: data.type,
+      size: data.size,
+      data: url,
+      storagePath: storageRef.fullPath
+    }];
+
+    await A.setDoc(
+      A.doc(A.db, 'submissions', id),
+      {
+        analysisId: submission.analysisId,
+        user: submission.user,
+        items: submission.items,
+        status: 'pending',
+        note: '',
+        createdAt: submission.createdAt
+      }
+    );
+
+    db.submissions.push(submission);
+    save();
+
+    return submission;
+
+  } catch (e) {
+    console.error('SEND ERROR:', e);
+    throw new Error('فشل إرسال الصورة: ' + (e.message || e.code || 'خطأ غير معروف'));
+  }
+  }
 async function sendSingle(){
- if(!singleData)return;
- try{await addSubmission(singleData);singleData=null;clearUserInputs();await loadCloudData();renderUserResult();openAnalysisModal();}
- catch(e){alert(e.message||'تعذر إرسال الصورة.');}
-}
+  if(!singleData){
+    alert('اختر صورة أولًا.');
+    return;
+  }
+
+  const btn = document.getElementById('singleSend');
+  btn.disabled = true;
+  btn.textContent = '⏳ جارٍ الإرسال...';
+
+  try {
+    await addSubmission(singleData);
+
+    singleData = null;
+    clearUserInputs();
+
+    await loadCloudData();
+    renderUserResult();
+    openAnalysisModal();
+
+  } catch(e) {
+    console.error(e);
+    alert(e.message || 'تعذر إرسال الصورة.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🔍 تحليل الملف';
+  }
+  }
 function renderUserResult(){
  const mine=db.submissions.filter(x=>x.user===currentUser).slice().reverse();
  userResult.innerHTML=mine.length?mine.map(s=>{
