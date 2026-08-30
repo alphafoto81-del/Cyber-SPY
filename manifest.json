@@ -1,6 +1,6 @@
 {
-  "name": "CYBER-SPY",
-  "short_name": "CYBER-SPY",
+  "name": "رصد-ميزانية",
+  "short_name": "ميزانية الطفيلة عقارات",
   "description": "منصة CYBER-SPY لتحليل الملفات وإدارة طلبات التحليل.",
   "start_url": "./",
   "scope": "./",
