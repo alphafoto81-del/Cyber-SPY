@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0b1220">
+<title>ميزانية الطفيلة عقارات</title>
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;font-family:Tahoma,Arial,sans-serif;background:#0b1220;color:#f8fafc;
+  min-height:100vh;
+}
+.app{max-width:760px;margin:auto;padding:18px 15px 35px}
+header{text-align:center;padding:8px 0 16px}
+header h1{font-size:23px;margin:0 0 6px}
+header p{margin:0;color:#94a3b8;font-size:13px}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+.action{
+  border:0;border-radius:18px;padding:16px 10px;color:white;font-weight:bold;font-size:16px;
+  cursor:pointer;box-shadow:0 8px 25px rgba(0,0,0,.22);transition:.15s
+}
+.action:active{transform:scale(.97)}
+.expense{background:linear-gradient(135deg,#ef4444,#b91c1c)}
+.income{background:linear-gradient(135deg,#3b82f6,#1d4ed8)}
+.period{background:linear-gradient(135deg,#8b5cf6,#6d28d9)}
+.actions .period{grid-column:1/-1}
+.action small{display:block;font-size:11px;opacity:.8;margin-top:4px}
+.balance-wrap{display:flex;justify-content:center;margin:4px 0 24px}
+.balance{
+  width:min(76vw,285px);height:min(76vw,285px);max-width:285px;max-height:285px;
+  border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 35% 30%,#22c55e,#15803d);
+  box-shadow:0 0 28px rgba(34,197,94,.38),inset 0 0 30px rgba(255,255,255,.08);
+  border:5px solid rgba(255,255,255,.09);transition:.35s
+}
+.balance.positive{background:radial-gradient(circle at 35% 30%,#60a5fa,#2563eb);box-shadow:0 0 32px rgba(59,130,246,.45),inset 0 0 30px rgba(255,255,255,.08)}
+.balance.negative{background:radial-gradient(circle at 35% 30%,#f87171,#dc2626);box-shadow:0 0 32px rgba(239,68,68,.42),inset 0 0 30px rgba(255,255,255,.08)}
+.balance .label{font-size:15px;opacity:.9;margin-bottom:7px}
+.balance .amount{font-size:34px;font-weight:900;direction:ltr}
+.balance .state{font-size:18px;font-weight:bold;margin-top:8px}
+.card{
+  background:#111827;border:1px solid #1f2937;border-radius:20px;padding:17px;
+  margin-top:14px;box-shadow:0 8px 25px rgba(0,0,0,.16)
+}
+.card h2{font-size:16px;margin:0 0 15px}
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:#0b1220;border-radius:14px;padding:12px 7px;text-align:center}
+.stat span{display:block;font-size:11px;color:#94a3b8;margin-bottom:7px}
+.stat strong{font-size:15px;direction:ltr;display:block}
+.blue{color:#60a5fa}.red{color:#f87171}.green{color:#4ade80}
+.chart-box{height:280px;position:relative}
+canvas{width:100%;height:100%;display:block}
+.legend{display:flex;justify-content:center;gap:18px;font-size:11px;color:#cbd5e1;margin-top:5px}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-left:5px}
+.records{display:flex;flex-direction:column;gap:9px}
+.record{
+  display:flex;align-items:center;justify-content:space-between;background:#0b1220;
+  border-radius:14px;padding:11px 12px;border-right:4px solid #64748b
+}
+.record.income-r{border-right-color:#3b82f6}.record.expense-r{border-right-color:#ef4444}
+.record-info{min-width:0}.record-type{font-weight:bold;font-size:13px}.record-date{font-size:10px;color:#64748b;margin-top:4px}
+.record-amount{font-weight:bold;direction:ltr;font-size:14px}
+.delete{background:transparent;border:0;color:#64748b;font-size:17px;cursor:pointer;margin-right:8px}
+.empty{text-align:center;color:#64748b;font-size:13px;padding:18px}
+.modal-bg{
+  position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:flex-end;
+  justify-content:center;z-index:10;padding:12px
+}
+.modal-bg.show{display:flex}
+.modal{width:min(100%,520px);background:#111827;border:1px solid #273244;border-radius:24px;padding:20px}
+.modal h3{margin:0 0 18px;font-size:18px}
+label{display:block;font-size:12px;color:#cbd5e1;margin:11px 0 6px}
+input,select{
+  width:100%;background:#0b1220;color:#fff;border:1px solid #334155;border-radius:12px;
+  padding:13px;font-size:14px;outline:none
+}
+input:focus,select:focus{border-color:#60a5fa}
+.modal-buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
+.btn{border:0;border-radius:12px;padding:13px;font-weight:bold;cursor:pointer}
+.save{color:#fff}.cancel{background:#263244;color:#cbd5e1}
+.footer{text-align:center;color:#475569;font-size:10px;margin-top:24px}
+@media(max-width:420px){
+ .summary{gap:5px}.stat strong{font-size:13px}.balance .amount{font-size:29px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <h1>ميزانية الطفيلة عقارات</h1>
+  <p>إدارة الإيرادات والنفقات وحساب الأرباح تلقائيًا</p>
+</header>
+
+<div class="actions">
+  <button class="action expense" onclick="openModal('expense')">🔴 المصاريف / النفقات<small>إضافة نفقة جديدة</small></button>
+  <button class="action income" onclick="openModal('income')">🔵 الإيرادات<small>إضافة إيراد جديد</small></button>
+  <button class="action period" onclick="openPeriodModal()">📊 الحصيلة من فترة زمنية<small>احسب واحفظ صافي فترة محددة</small></button>
+</div>
+
+<div class="balance-wrap">
+  <div id="balance" class="balance">
+    <div class="label">الميزانية الحالية</div>
+    <div id="balanceAmount" class="amount">0.00 د.أ</div>
+    <div id="balanceState" class="state">متوازن</div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>📊 الملخص المالي</h2>
+  <div class="summary">
+    <div class="stat"><span>إجمالي الإيرادات</span><strong id="totalIncome" class="blue">0.00 د.أ</strong></div>
+    <div class="stat"><span>إجمالي النفقات</span><strong id="totalExpense" class="red">0.00 د.أ</strong></div>
+    <div class="stat"><span>صافي النتيجة</span><strong id="net" class="green">0.00 د.أ</strong></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>📋 الحصائل المحفوظة</h2>
+  <div id="periodResults" class="records"></div>
+</div>
+
+<div class="card">
+  <h2>📈 الأداء حسب التاريخ</h2>
+  <div class="chart-box"><canvas id="chart"></canvas></div>
+  <div class="legend">
+    <span><i style="background:#3b82f6"></i>الإيرادات</span>
+    <span><i style="background:#ef4444"></i>النفقات</span>
+    <span><i style="background:#22c55e"></i>الأرباح</span>
+  </div>
+</div>
+
+<div class="card">
+  <h2>🧾 آخر العمليات</h2>
+  <div id="records" class="records"></div>
+</div>
+
+<div class="footer">البيانات محفوظة محليًا على هذا الجهاز — Local Storage</div>
+</div>
+
+<div id="periodModalBg" class="modal-bg" onclick="periodBackgroundClose(event)">
+ <div class="modal">
+  <h3>📊 حساب حصيلة من فترة زمنية</h3>
+  <form id="periodForm">
+   <label>اسم الحصيلة</label>
+   <input id="periodName" type="text" maxlength="60" placeholder="مثال: الحصيلة الشهرية - آب 2026" required>
+   <label>من تاريخ</label>
+   <input id="periodStart" type="date" required>
+   <label>إلى تاريخ</label>
+   <input id="periodEnd" type="date" required>
+   <div class="modal-buttons">
+    <button type="button" class="btn cancel" onclick="closePeriodModal()">إلغاء</button>
+    <button type="submit" class="btn save" style="background:#7c3aed">حساب وحفظ الحصيلة</button>
+   </div>
+  </form>
+ </div>
+</div>
+
+<div id="modalBg" class="modal-bg" onclick="backgroundClose(event)">
+ <div class="modal">
+  <h3 id="modalTitle">إضافة عملية</h3>
+  <form id="entryForm">
+    <label>المبلغ (دينار أردني)</label>
+    <input id="amount" type="number" min="0.01" step="0.01" required inputmode="decimal" placeholder="مثال: 50">
+    <label>نوع العملية</label>
+    <select id="category" required></select>
+    <label>التاريخ</label>
+    <input id="date" type="date" required>
+    <label>ملاحظة (اختياري)</label>
+    <input id="note" type="text" maxlength="80" placeholder="مثال: إعلان مميز">
+    <div class="modal-buttons">
+      <button type="button" class="btn cancel" onclick="closeModal()">إلغاء</button>
+      <button id="saveBtn" type="submit" class="btn save">حفظ العملية</button>
+    </div>
+  </form>
+ </div>
+</div>
+
+<script>
+const KEY='tafila_real_estate_budget_v1';
+const PERIOD_KEY='tafila_real_estate_period_results_v1';
+let records=JSON.parse(localStorage.getItem(KEY)||'[]');
+let periodResults=JSON.parse(localStorage.getItem(PERIOD_KEY)||'[]');
+let currentType='income';
+
+const incomeCats=['بيع إعلان','إعلان مميز','تصميم منشور','تصميم ريلز','تمويل إعلان','باقة إعلانية','خدمة أخرى'];
+const expenseCats=['إعلان ممول','تصميم','اشتراك','استضافة / دومين','مواصلات','معدات','مصروف تشغيلي','نفقة أخرى'];
+
+function money(n){return Number(n).toLocaleString('ar-JO',{minimumFractionDigits:2,maximumFractionDigits:2})+' د.أ'}
+function save(){localStorage.setItem(KEY,JSON.stringify(records));render()}
+function savePeriods(){localStorage.setItem(PERIOD_KEY,JSON.stringify(periodResults));renderPeriodResults()}
+function openModal(type){
+ currentType=type;
+ document.getElementById('modalBg').classList.add('show');
+ document.getElementById('modalTitle').textContent=type==='income'?'🔵 إضافة إيراد':'🔴 إضافة نفقة';
+ const cats=type==='income'?incomeCats:expenseCats;
+ document.getElementById('category').innerHTML=cats.map(x=>`<option>${x}</option>`).join('');
+ document.getElementById('date').value=new Date().toISOString().slice(0,10);
+ document.getElementById('amount').value='';
+ document.getElementById('note').value='';
+ setTimeout(()=>document.getElementById('amount').focus(),100);
+}
+function closeModal(){document.getElementById('modalBg').classList.remove('show')}
+function backgroundClose(e){if(e.target.id==='modalBg')closeModal()}
+function openPeriodModal(){
+ document.getElementById('periodModalBg').classList.add('show');
+ const today=new Date().toISOString().slice(0,10);
+ const d=new Date(); d.setDate(1);
+ document.getElementById('periodStart').value=d.toISOString().slice(0,10);
+ document.getElementById('periodEnd').value=today;
+ document.getElementById('periodName').value='';
+ setTimeout(()=>document.getElementById('periodName').focus(),100);
+}
+function closePeriodModal(){document.getElementById('periodModalBg').classList.remove('show')}
+function periodBackgroundClose(e){if(e.target.id==='periodModalBg')closePeriodModal()}
+
+document.getElementById('periodForm').addEventListener('submit',e=>{
+ e.preventDefault();
+ const name=document.getElementById('periodName').value.trim();
+ const start=document.getElementById('periodStart').value;
+ const end=document.getElementById('periodEnd').value;
+ if(!name||!start||!end)return;
+ if(start>end){alert('تاريخ البداية يجب أن يكون قبل أو مساويًا لتاريخ النهاية.');return}
+ const selected=records.filter(r=>r.date>=start&&r.date<=end);
+ const inc=selected.filter(r=>r.type==='income').reduce((a,r)=>a+r.amount,0);
+ const exp=selected.filter(r=>r.type==='expense').reduce((a,r)=>a+r.amount,0);
+ const net=inc-exp;
+ periodResults.unshift({id:Date.now(),name,start,end,inc,exp,net});
+ closePeriodModal();
+ savePeriods();
+});
+document.getElementById('entryForm').addEventListener('submit',e=>{
+ e.preventDefault();
+ records.push({
+   id:Date.now(),type:currentType,amount:Number(document.getElementById('amount').value),
+   category:document.getElementById('category').value,date:document.getElementById('date').value,
+   note:document.getElementById('note').value.trim()
+ });
+ closeModal();save();
+});
+function del(id){
+ if(confirm('حذف هذه العملية؟')){records=records.filter(r=>r.id!==id);save()}
+}
+function render(){
+ const inc=records.filter(r=>r.type==='income').reduce((a,r)=>a+r.amount,0);
+ const exp=records.filter(r=>r.type==='expense').reduce((a,r)=>a+r.amount,0);
+ const net=inc-exp;
+ document.getElementById('totalIncome').textContent=money(inc);
+ document.getElementById('totalExpense').textContent=money(exp);
+ document.getElementById('net').textContent=money(net);
+ const b=document.getElementById('balance');
+ b.className='balance '+(net>0?'positive':net<0?'negative':'');
+ document.getElementById('balanceAmount').textContent=(net<0?'−':'')+money(Math.abs(net));
+ document.getElementById('balanceState').textContent=net>0?'أرباح':net<0?'خسائر':'متوازن';
+
+ const sorted=[...records].sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);
+ document.getElementById('records').innerHTML=sorted.length?sorted.slice(0,30).map(r=>`
+ <div class="record ${r.type==='income'?'income-r':'expense-r'}">
+   <div class="record-info">
+     <div class="record-type">${r.type==='income'?'🔵':'🔴'} ${esc(r.category)}</div>
+     <div class="record-date">${r.date}${r.note?' — '+esc(r.note):''}</div>
+   </div>
+   <div class="record-amount ${r.type==='income'?'blue':'red'}">${r.type==='income'?'+':'−'} ${money(r.amount)}</div>
+   <button class="delete" onclick="del(${r.id})" title="حذف">×</button>
+ </div>`).join(''):'<div class="empty">لا توجد عمليات بعد. أضف أول إيراد أو نفقة.</div>';
+ drawChart();
+}
+function renderPeriodResults(){
+ const el=document.getElementById('periodResults');
+ if(!periodResults.length){
+  el.innerHTML='<div class="empty">لا توجد حصائل محفوظة. اختر فترة زمنية واحفظ أول حصيلة.</div>';
+  return;
+ }
+ el.innerHTML=periodResults.map(x=>`
+  <div class="record" style="display:block;border-right-color:#8b5cf6">
+   <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+    <div class="record-info">
+     <div class="record-type">📊 ${esc(x.name)}</div>
+     <div class="record-date">من ${x.start} إلى ${x.end}</div>
+    </div>
+    <button class="delete" onclick="delPeriod(${x.id})" title="حذف الحصيلة">×</button>
+   </div>
+   <div class="summary" style="margin-top:10px">
+    <div class="stat"><span>الإيرادات</span><strong class="blue">${money(x.inc)}</strong></div>
+    <div class="stat"><span>المصاريف</span><strong class="red">${money(x.exp)}</strong></div>
+    <div class="stat"><span>النتيجة</span><strong class="${x.net>=0?'green':'red'}">${x.net<0?'−':''}${money(Math.abs(x.net))}</strong></div>
+   </div>
+  </div>`).join('');
+}
+function delPeriod(id){
+ if(confirm('حذف هذه الحصيلة المحفوظة؟')){
+  periodResults=periodResults.filter(x=>x.id!==id);
+  savePeriods();
+ }
+}
+
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+
+function drawChart(){
+ const canvas=document.getElementById('chart'), box=canvas.parentElement;
+ const dpr=window.devicePixelRatio||1,w=box.clientWidth,h=box.clientHeight;
+ canvas.width=w*dpr;canvas.height=h*dpr;canvas.style.width=w+'px';canvas.style.height=h+'px';
+ const c=canvas.getContext('2d');c.scale(dpr,dpr);c.clearRect(0,0,w,h);
+ const dates=[...new Set(records.map(r=>r.date))].sort();
+ if(!dates.length){
+   c.fillStyle='#64748b';c.font='13px Tahoma';c.textAlign='center';c.fillText('أضف عمليات لعرض الرسم البياني',w/2,h/2);
+   return;
+ }
+ const pad={l:42,r:10,t:18,b:35}, cw=w-pad.l-pad.r,ch=h-pad.t-pad.b;
+ const data=dates.map(date=>{
+   let i=0,e=0;records.filter(r=>r.date===date).forEach(r=>r.type==='income'?i+=r.amount:e+=r.amount);
+   return {date,i,e,p:i-e};
+ });
+ const max=Math.max(1,...data.flatMap(x=>[x.i,x.e,Math.abs(x.p)]))*1.15;
+ const min=Math.min(0,...data.map(x=>x.p))*1.15;
+ const range=(max-min)||1;
+ const x=j=>dates.length===1?pad.l+cw/2:pad.l+j*cw/(dates.length-1);
+ const y=v=>pad.t+(max-v)*ch/range;
+ c.strokeStyle='#263244';c.lineWidth=1;
+ for(let k=0;k<5;k++){let v=max-(max-min)*k/4, yy=y(v);c.beginPath();c.moveTo(pad.l,yy);c.lineTo(w-pad.r,yy);c.stroke();
+   c.fillStyle='#64748b';c.font='9px Tahoma';c.textAlign='right';c.fillText(v.toFixed(0),pad.l-5,yy+3)}
+ function line(key,stroke){
+   c.strokeStyle=stroke;c.lineWidth=2.5;c.beginPath();
+   data.forEach((d,j)=>j?c.lineTo(x(j),y(d[key])):c.moveTo(x(j),y(d[key])));
+   c.stroke();
+   data.forEach((d,j)=>{c.fillStyle=stroke;c.beginPath();c.arc(x(j),y(d[key]),3,0,Math.PI*2);c.fill()})
+ }
+ line('i','#3b82f6');line('e','#ef4444');line('p','#22c55e');
+ c.fillStyle='#64748b';c.font='9px Tahoma';c.textAlign='center';
+ const step=Math.max(1,Math.ceil(dates.length/6));
+ dates.forEach((date,j)=>{if(j%step===0)c.fillText(date.slice(5),x(j),h-10)});
+}
+window.addEventListener('resize',drawChart);
+render();
+renderPeriodResults();
+</script>
+</body>
+</html>
