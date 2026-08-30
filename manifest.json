@@ -1,17 +1,27 @@
 {
-  "name": "رصد-ميزانية",
-  "short_name": "ميزانية الطفيلة عقارات",
-  "description": "منصة CYBER-SPY لتحليل الملفات وإدارة طلبات التحليل.",
+  "name": "ميزانية الطفيلة عقارات",
+  "short_name": "ميزانية",
+  "description": "إدارة الإيرادات والنفقات وحساب الأرباح تلقائياً لعقارات الطفيلة",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "dir": "rtl",
+  "background_color": "#06152e",
+  "theme_color": "#0b3d91",
   "lang": "ar",
-  "theme_color": "#050505",
-  "background_color": "#050505",
-  "categories": [
-    "security",
-    "utilities"
+  "dir": "rtl",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
   ]
 }
